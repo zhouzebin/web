@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>意见反馈</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+<meta http-equiv="X-UA-Compatible" content="IE=8" />
+
+<style type="text/css">
+	body {
+	    font-family: 'Helvetica Neue',Helvetica,微软雅黑;
+	}
+	.imageDetail{
+	    height: 90%;
+	    background-color: #f8f8f8;
+	    z-index: 99;
+	    position: absolute;
+	    top: 50%;
+	    left: 50%;
+	    border: 1px solid gainsboro;
+	    box-shadow: 0 0 6px #d9d9d9;
+        overflow: hidden;
+	}
+	.closeImgDetail{
+	    height: 30px;
+	    width: 30px;
+	    background-color: #424242;
+	    right: 10px;
+	    top: 10px;
+	    position: absolute;
+	    color: white;
+	    border-radius: 15px;
+	    text-align: center;
+        font-size: xx-large;
+    	line-height: 95%;
+    	z-index: 9;
+    	-webkit-user-select: none; 
+	    -moz-user-select: none;    
+	    -khtml-user-select: none;  
+	    -ms-user-select: none;    
+	    -o-user-select: none;
+	    user-select: none;  
+	}
+	.imgDetailimg{
+	    position: absolute;
+	    top: 50%;
+	    left: 50%;
+	    -moz-transform:scale(1);
+        background-repeat: no-repeat;
+        -moz-background-size:contain;
+	    -webkit-background-size:contain;
+	    -o-background-size:contain;
+	    background-size:contain;
+	}
+</style>
+</head>
+<body ondragstart="return false;">
+    <!--BEGIN actionSheet-->
+ 	<img alt="" class="weui-uploader__file" src="../images/1.JPG" width="80px" height="80px">
+ 	<img alt="" class="weui-uploader__file" src="../images/4.JPG" width="80px" height="80px">
+ 	<img alt="" class="weui-uploader__file" src="../images/phoneListTemp.jpg" width="80px" height="80px">
+  	
+    <script src="../js/jquery.js"></script>
+	<script>
+        $(".weui-uploader__file").on('click', function(){
+        	if(!document.getElementById("imgDetail")){
+//         		var imgSrc = explorerType==="Safari" ? this.style.backgroundImage.split("(")[1].split(")")[0] : this.style.backgroundImage.split('\"')[1];
+        		var imgSrc = $(this).attr("src");
+        		var imgDetailDiv = document.createElement('div');
+            	imgDetailDiv.id = "imgDetail";
+            	imgDetailDiv.className = "imageDetail";
+        		document.body.appendChild(imgDetailDiv);
+        		
+        		var imgDetailDivH = $(imgDetailDiv).height();//容器高度
+        		$(imgDetailDiv).width(imgDetailDivH);
+        		$(imgDetailDiv).css("margin-left",-imgDetailDivH/2);
+        		$(imgDetailDiv).css("margin-top",-imgDetailDivH/2);
+        		//添加监听
+        		$(imgDetailDiv).attr("onmousewheel","return changingZoom(this)");
+        		//如果是firefox下支持onmousewheel功能，只需要以下代码：
+              	if (explorerType=="Firefox"){
+              		imgDetailDiv.addEventListener('DOMMouseScroll',changingZoomForFirefox,false);
+              	}
+        		
+            	$(imgDetailDiv).html("<a class='closeImgDetail'>×</a><div class='imgDetailimg' style='background-image: url("+imgSrc+");'></div>");
+            	$(".imgDetailimg").css('margin-top',-$(".imgDetailimg").height()/2+'px');
+            	$(".imgDetailimg").css('margin-left',-$(".imgDetailimg").width()/2+'px');
+            	$(".closeImgDetail").on('click', function(){
+            		document.body.removeChild(imgDetailDiv);
+                });
+            	
+            	var imgObj = imgDetailDiv.getElementsByTagName('div')[0];
+            	var image = new Image();
+            	image.src = imgSrc;
+            	if(image.height<image.width){
+            		imgObj.style.width = imgDetailDivH+'px';
+            		imgObj.style.height = imgDetailDivH*image.height/image.width+'px';
+            	}else{
+            		imgObj.style.height = imgDetailDivH+'px';
+            		imgObj.style.width = imgDetailDivH*image.width/image.height+'px';
+            	}
+            	var imgW = parseInt(imgObj.style.width.split("px")[0]);
+            	var imgH = parseInt(imgObj.style.height.split("px")[0]);
+            	var x_start = 0;
+            	var y_start = 0;
+            	var top_start = 0;
+            	var left_start = 0;
+            	
+            	$(".imgDetailimg").css('margin-top',-$(".imgDetailimg").height()/2+'px');
+	        	$(".imgDetailimg").css('margin-left',-$(".imgDetailimg").width()/2+'px');
+            	
+	        	var isdrag = false;//是否处于可拖动状态
+	        	imgObj.onmousedown = function(event){
+            	    x_start = event.screenX;
+            	    y_start = event.screenY;
+            	    var zoom=parseInt(this.style.zoom, 10)||100;
+            	    left_start = parseInt($(this).css('left').split('px')[0]);
+            	    top_start = parseInt($(this).css('top').split('px')[0]);
+            	    if(explorerType=="Chrome"){
+						left_start = parseInt(left_start*zoom/100);
+						top_start = parseInt(top_start*zoom/100);
+					}else if(explorerType=="Safari"){
+						left_start = (parseInt(imgW/2+this.offsetLeft))*zoom/100;
+						top_start = (parseInt(imgH/2+this.offsetTop))*zoom/100;
+					}
+            	    isdrag = true;
+            	    imgObj.onmousemove=moveMouse;
+            	};
+	        	var moveMouse = function(event){
+	        		if(isdrag){
+		        		var x_move = event.screenX - x_start;
+	            	    var y_move = event.screenY - y_start;
+            	    	var zoom=parseInt(this.style.zoom, 10)||100;
+	            	    (event.screenX&&event.screenY) && $(this).css("left",100*(left_start+x_move)/imgDetailDivH+"%");
+	            	    (event.screenX&&event.screenY) && $(this).css("top",100*(top_start+y_move)/imgDetailDivH+"%");
+	        		}
+	        	};
+	        	
+	        	document.onmouseup=function(){
+	        		isdrag = false;
+	        	};
+        	}
+        });
+        var ifIe = ifIe();
+        function changingZoom(o){ 
+        	var imgdom = o.childNodes[1];
+       	 	var zoom=parseInt(imgdom.style.zoom, 10)||100;
+       	 	zoom+=event.wheelDelta/12;
+       	 	if (zoom>0&&zoom<500) imgdom.style.zoom=zoom+'%';
+       	 	if(ifIe==1){
+	       	 	$(".imgDetailimg").css('margin-top',-$(".imgDetailimg").height()*zoom/200+'px');
+	        	$(".imgDetailimg").css('margin-left',-$(".imgDetailimg").width()*zoom/200+'px');
+       	 	}
+       	 	return false;
+       	}
+        function changingZoomForFirefox(){
+        	var e=window.event?window.event:arguments[0];  
+        	var scale = $(this).children(".imgDetailimg").css("transform").split("(")[1].split(",")[0];
+        	scale = +scale - e.detail/50;
+        	(scale>0.05&&scale<5) && $(this).children(".imgDetailimg").css("transform","scale("+scale+")");
+        }
+        
+        function ifIe(){  
+           if (!!window.ActiveXObject || "ActiveXObject" in window){   
+               return(1);  
+           }else{  
+               return(2);  
+           }  
+        } 
+		
+        var explorer = window.navigator.userAgent;
+        var explorerType = getExplorerType();
+      	function getExplorerType(){
+      		//ie 
+          	if (explorer.indexOf("MSIE") >= 0) {
+              return("ie");
+          	}
+          	//firefox 
+          	else if (explorer.indexOf("Firefox") >= 0) {
+              return("Firefox");
+          	}
+          	//Chrome
+          	else if(explorer.indexOf("Chrome") >= 0){
+              return("Chrome");
+          	}
+          	//Opera
+          	else if(explorer.indexOf("Opera") >= 0){
+              return("Opera");
+          	}
+          	//Safari
+          	else if(explorer.indexOf("Safari") >= 0){
+              return("Safari");
+          	}
+      	}
+      	
+	</script>
+</body>
+</html>
